@@ -36,9 +36,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 public class MetricsController {
 
-    // External System and Supplier ID
-    private static String PREFIX = "PMSC/SUPPLIER";
-
     @Autowired
     private GraphQLClient client;
 
@@ -55,7 +52,7 @@ public class MetricsController {
     @RequestMapping(value = "/metrics", method = RequestMethod.GET)
     public Optional<PropertyMetrics> metrics(@RequestParam(value = "propertyId", defaultValue = "123.456.7890") String propertyId) {
         log.info("GET Metrics for {}", propertyId);
-        String externalId = String.format("%s/%s", PREFIX, propertyId);
+        String externalId = String.format("%s/%s", GraphQLClient.PREFIX, propertyId);
                 try {
                     return client.getMetrics(URLEncoder.encode(externalId, "UTF-8"));
                 } catch (Exception ex) {

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
+import com.homeaway.hackathon.model.PropertyCompetitiveUnits;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.boot.json.JsonSimpleJsonParser;
@@ -39,8 +40,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GraphQLClient {
 
-    private static final String AUTH_TOKEN = "<TOKEN TO BE INSERTED HERE>";
-    private static final String ENDPOINT = "<GRAPHQL ENDPOINT TO BE INSERTED HERE>";
+    // External System and Supplier ID
+    public static String PREFIX = "MYBOOKINGPAL/724471";
+    private static final String AUTH_TOKEN = "2bb49b51-ff91-4532-ab63-0894fb6ac571";
+    private static final String ENDPOINT = "https://xapi.homeaway.com/rezfest/graphql";
 
     private static final OkHttpClient CLIENT = new OkHttpClient();
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -71,6 +74,7 @@ public class GraphQLClient {
      */
     public Optional<PropertyMetrics> getMetrics(String propertyId) {
         String query = getMetricsQuery(propertyId);
+        log.info("query {}", query);
         try {
             // Do Post
             String response = doPostRequest(ENDPOINT, query);
@@ -116,6 +120,61 @@ public class GraphQLClient {
             + "  }"
             + "}"
             + "\"}";
+        return String.format(rawQuery, propertyId);
+    }
+
+    public Optional<PropertyCompetitiveUnits> getCompetitiveSet(String propertyId) {
+        String query = getCompetitiveUnitsQuery(propertyId);
+        log.info("query {}", query);
+        try {
+            // Do Post
+            String response = doPostRequest(ENDPOINT, query);
+
+            // De-Serialize
+            Object obj = new JsonSimpleJsonParser().parseMap(response);
+            JSONObject jo = (JSONObject) obj;
+            Map data = (Map)jo.get("data");
+            JSONObject property = (JSONObject)data.get("property");
+            if (property!=null) {
+                //Return
+                return Optional.ofNullable(MAPPER.readValue(property.toString(), PropertyCompetitiveUnits.class));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Construct the Query
+     * @param propertyId property id
+     * @return competitive set for property
+     */
+    private String getCompetitiveUnitsQuery(String propertyId) {
+        String rawQuery = "{"
+                + "\"operationName\":null,"
+                + "\"variables\":{\"propertyId\":\"%s\"},"
+                + "\"query\":\"query ($propertyId: String!) "
+                + "{  property(propertyId: $propertyId) {"
+                + "    legacyId"
+                + "    externalId"
+                + "    competitiveUnits {"
+                + "      similarityScore"
+                + "      listingTypeDesc"
+                + "      propertyTypeDesc"
+                + "      heading"
+                + "      distanceFromUnit"
+                + "      listingLink"
+                + "      unitPhotoUrl"
+                + "      unitThumbnailUrl"
+                + "      geocode {"
+                + "        longitude"
+                + "        latitude"
+                + "      }"
+                + "    }"
+                + "  }"
+                + "}"
+                + "\"}";
         return String.format(rawQuery, propertyId);
     }
 }
