@@ -103,7 +103,7 @@ License: Creative Commons Attribution
       function setRentPotential() {
     	  $.get("http://localhost:8080/rentPotential?latitude=" + mainProperty.lat + "&longitude=" + mainProperty.lng +"&bathroom=5.5&bedroom=6&sleep=12", function(data, status){
               rentPotential = data.output.rentpotential_pure_ha.mean;
-              document.getElementById("rent_stuff").innerHTML = rentPotential;
+              document.getElementById("rent_stuff").innerHTML = "$ " + rentPotential.toFixed(2);
           });
       }
 
@@ -308,11 +308,28 @@ License: Creative Commons Attribution
       function createCompetitionMarker(place,type) {
         var originIcon = 'https://chart.googleapis.com/chart?' +
             'chst=d_map_pin_letter&chld=' + type + '|FFFF00|000000';
-
+        var uri;
+        if (type == 'M') {
+          uri = 'color-icons-green-home.svg';
+        } else {
+          uri = 'house-blue.svg';
+        }
+        var homeIcon = {
+          url: uri,
+          scaledSize: new google.maps.Size(40, 40),
+          origin: new google.maps.Point(0, 0), // used if icon is a part of sprite, indicates image position in sprite
+          anchor: new google.maps.Point(20,40) // lets offset the marker image
+        };
+        var markerIcon;
+        if (type == 'M') {
+          markerIcon = homeIcon;
+        } else {
+          markerIcon = originIcon;
+        }
         var marker = new google.maps.Marker({
           map: map,
           position: new google.maps.LatLng(place.lat,place.lng),
-          icon: originIcon
+          icon: markerIcon
         });
         bounds.extend(marker.getPosition());
 
@@ -371,7 +388,7 @@ License: Creative Commons Attribution
     			<ul class="sf-menu dropdown">
 
 			
-        			<li class="selected"><a href="index.html">Home</a></li>
+        			<li class="selected"><a href="#">Home</a></li>
 
             			<li>
             
@@ -420,27 +437,29 @@ License: Creative Commons Attribution
 							  <input type="radio" name="prop_type" value="zoo"> Zoo<br>
 							  <input type="radio" name="prop_type" value="store" checked> Other Stores<br>
 							  <input type="number" id="time" name="time" min="5" max="40" value="5">
-							  <button onclick="changeSettings()">Click To Change Settings</button>
+							  <button onclick="changeSettings()" style="cursor: pointer;">Click To Change Settings</button>
                         </li>
                     </ul>
                 </li>
                 
                 <li>
-			<h4>Property IDs</h4>
+			<h4>Properties</h4>
 			<ul class="newslist">
 				<li>
+
 					<p style="color:white;"><span class="newslist-date"  onclick='changePropertyId("1234584956%2F1234584956")'>CLICK TO SEE HEATMAP</span>
-			                   Property ID 1234584956%2F1234584956 West Side EPCOT</p>
+			                   Property ID 1234584956 West Side EPCOT</p>
 				</li>
 
 <li>
 					<p style="color:white;"><span class="newslist-date"  onclick='changePropertyId("1234584931%2F1234584931")'>CLICK TO SEE HEATMAP</span>
-			                  Property ID 1234584931%2F1234584931 ORLANDO DOWNTOWN</p>
+			                  Property ID 1234584931 ORLANDO DOWNTOWN</p>
  
  					<br>
  					<p style="color:white;"><span class="newslist-date" onclick='changePropertyId("1234771580%2F1234771580")'>CLICK TO SEE HEATMAP</span>
-			                  Property ID 1234771580%2F1234771580 East Side EPCOT</p>
+			                  Property ID 1234771580 East Side EPCOT</p>
  
+
 				</li>
 			</ul>
                 </li>
@@ -448,7 +467,7 @@ License: Creative Commons Attribution
    		<li>
                     <h4>Listing Suggestion</h4>
                     <ul>
-        				<li style="color:white;font-size:35px;">$<span id="rent_stuff" style="color:white;padding-right:100px;font-size:20px;padding-left:20px;"></span><img id="trend" src="nothing.png" style="width:90px;height:50px;"></li>
+        				<li style="color:white;font-size:35px;"><span id="rent_stuff" style="color:white;padding-right:100px;font-size:20px;padding-left:20px;"></span><img id="trend" src="nothing.png" style="width:90px;height:50px;"></li>
         			</ul>
                 </li>
                 
@@ -463,7 +482,7 @@ License: Creative Commons Attribution
             <div class="clear"></div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; YourSite 2014. <a href="http://zypopwebtemplates.com/">Free CSS Web Templates</a> by ZyPOP</p>
+            <p>&copy; Heatmap tool 2019. <a href="http://zypopwebtemplates.com/">Free CSS Web Templates</a> by ZyPOP</p>
          </div>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGtKI6e-3klr-sJzVLikzNs-7f6TpjZ6Q&libraries=places,visualization&callback=initMap" async defer></script>
 </body>
