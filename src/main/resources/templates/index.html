@@ -27,7 +27,7 @@
       }
 
       #content {
-        height: 1000px;
+        height: 700px;
         width: 1250px;
       }
 
@@ -61,15 +61,49 @@ License: Creative Commons Attribution
       // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
 
       var map = null;
+      var image;
+      var averageTimeForCompetition;
+      var time = 5;
       var infowindow;
       var mainProperty;
       var competition;
       var destinations;
       var heatLocations;
       var bounds;
+      var rentPotential;
       var defaultProperty = "1234952674%2F1234952674";
+      var propertyType = "store";
 
       //var bounds = new google.maps.LatLngBounds;
+      
+      function changePropertyId(id) {
+    	  defaultProperty = id;
+    	  initMap();
+      }
+      
+      function changeSettings() {
+    	  var radios = document.getElementsByName('prop_type');
+
+    	  for (var i = 0, length = radios.length; i < length; i++)
+    	  {
+    	   if (radios[i].checked)
+    	   {
+    	    propertyType = radios[i].value;
+    	    alert(propertyType);
+    	    break;
+    	   }
+    	  }
+    	  time = parseInt(document.getElementById("time").value);
+    	  alert(time);
+    	  initMap();
+      }
+      
+      function setRentPotential() {
+    	  $.get("http://localhost:8080/rentPotential?latitude=28.26068250853662&longitude=-81.64670320000005&bathroom=5.5&bedroom=6&sleep=12", function(data, status){
+              rentPotential = data.output.rentpotential_pure_ha.mean;
+              document.getElementById("rent_stuff").innerHTML = rentPotential;
+          });
+      }
 
       function setCompetitiveUnits(propertyId) {
         //insert default globals here
@@ -88,6 +122,11 @@ License: Creative Commons Attribution
           }
           mainProperty = {lat:data.geocode.latitude, lng:data.geocode.longitude};
           competition = competitionParser;
+          map = new google.maps.Map(document.getElementById('map'), {
+              center: mainProperty,
+              zoom: 18
+          });
+          infowindow = new google.maps.InfoWindow();
           getNearbyPlaces();
         });
       }
@@ -107,12 +146,6 @@ License: Creative Commons Attribution
       */
 
       function initMap() { 
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: mainProperty,
-          zoom: 18
-        });
-        infowindow = new google.maps.InfoWindow();
-
         setCompetitiveUnits(defaultProperty);
       }
 
@@ -122,8 +155,8 @@ License: Creative Commons Attribution
         var service = new google.maps.places.PlacesService(map);
         service.nearbySearch({
           location: mainProperty,
-          radius: 1000,
-          type: ['store']
+          radius: 10000,
+          type: [propertyType]
         }, callback);
       }
 
@@ -140,6 +173,77 @@ License: Creative Commons Attribution
           }
           findDistanceMatrix(competition, destinations);
         }
+        else {
+        	var mapBox = document.getElementById("map");
+        	mapBox.innerHTML = "<h1>THERE ARE NO PLACES OF THAT TYPE WITHIN THE SEARCH ZONE!</h1>";
+        }
+      }
+      
+      function sleep (time) {
+    	 return new Promise((resolve) => setTimeout(resolve, time));
+      }
+      
+      function findAverageDistanceForMain() {
+    	  var service = new google.maps.DistanceMatrixService;
+          service.getDistanceMatrix({
+            origins: [mainProperty],
+            destinations: destinations,
+            travelMode: 'DRIVING',
+            unitSystem: google.maps.UnitSystem.METRIC,
+            avoidHighways: false,
+            avoidTolls: false
+          }, function(response, status) {
+            if (status !== 'OK') {
+              alert('Error was: ' + status);
+            } else {
+              var originList = response.originAddresses;
+              var destinationList = response.destinationAddresses;
+              
+              var mainTimes = [];
+              for (var i = 0; i < originList.length; i++) {
+                  var results = response.rows[i].elements;
+                  try {
+                      for (var j = 0; j < results.length; j++) {
+                        mainTimes.push(parseInt(results[j].duration.text));
+                      }
+                  }
+                  catch(err) {
+					  //do somethign steve
+					  mainTimes.push(time);
+                  }
+              }
+              
+              computeCost(mainTimes);
+            }
+        });
+      }
+      
+      function computeCost(mainTimes) {
+    	  var competitionAverage = 0.0;
+    	  var mainAverage = 0.0;
+    	  for(var i = 0; i < mainTimes.length; i++) {
+    		  competitionAverage += averageTimeForCompetition[i];
+    		  mainAverage += mainTimes[i];
+    	  }
+    	  competitionAverage /= mainTimes.length;
+    	  mainAverage /= mainTimes.length;
+    	  
+    	  if(mainAverage < competitionAverage) {
+    		  alert(mainAverage + " " + competitionAverage);
+    		  alert("up");
+    		  image = "UpArrow.png";
+    		  document.getElementById("trend").src = image;
+    	  }
+    	  else if(mainAverage > competitionAverage) {
+    		  alert(mainAverage + " " + competitionAverage);
+    		  alert("down");
+    		  image = "DownArrow.jpg"
+    	  }
+    	  else {
+    		  alert(mainAverage + " " + competitionAverage);
+    		  alert("nothing");
+    		  image = "nothing.jpg";
+    	  }
       }
 
       function findDistanceMatrix(porigins, pdestinations) {
@@ -174,17 +278,23 @@ License: Creative Commons Attribution
               }
             }
 
+            averageTimeForCompetition = [];
             for(var i = 0; i < results.length; i++) {
                 var sum = 0.0;
                 for(var j = 0; j < timeGrid.length; j++) {
                     sum += timeGrid[j][i];
                 }
                 var average = sum / timeGrid.length;
-                heatLocations[i].weight = average / 4;
+                averageTimeForCompetition.push(average);
+                heatLocations[i].weight = (time / average) * 0.25;
             }
           }
-          createHeatMap();
-          map.fitBounds(bounds);
+      	  sleep(1500).then(() => {
+	          findAverageDistanceForMain();
+	          createHeatMap();
+	          map.fitBounds(bounds);
+	          setRentPotential();
+          });
         });
       }
 
@@ -193,7 +303,7 @@ License: Creative Commons Attribution
             data: heatLocations,
             map: map
           });
-        heatmap.set('radius',800);
+        heatmap.set('radius',1000);
       }
 
       function createCompetitionMarker(place,type) {
@@ -286,27 +396,32 @@ License: Creative Commons Attribution
                     <h4>Heat Map Options</h4>
                     <ul class="blocklist">
                         <li>
-                            <p>radio buttons go here</p>
-                            <button onclick="setGlobals({lat: -36.867, lng: 145.185},[{lat: 28.37128, lng: -81.51216},{lat: -33.867, lng: 151.198},{lat: -33.866, lng: 151.195},{lat: -33.869, lng: 151.199}])">press me!</button>
+							  <input type="radio" name="prop_type" value="amusement_park"> Amusement Park<br>
+							  <input type="radio" name="prop_type" value="aquarium"> Aquarium<br>
+							  <input type="radio" name="prop_type" value="art_gallery"> Art Gallery<br>
+							  <input type="radio" name="prop_type" value="casino"> Casino<br>
+							  <input type="radio" name="prop_type" value="museum"> Museum<br>
+							  <input type="radio" name="prop_type" value="night_club"> Night Club<br>
+							  <input type="radio" name="prop_type" value="stadium"> Stadium<br>
+							  <input type="radio" name="prop_type" value="zoo"> Zoo<br>
+							  <input type="radio" name="prop_type" value="store" checked> Other Stores<br>
+							  <input type="number" id="time" name="time" min="5" max="40" value="5">
+							  <button onclick="changeSettings()">Click To Change Settings</button>
                         </li>
                     </ul>
                 </li>
                 
-               
-
-		
-               
                 <li>
 			<h4>Property IDs</h4>
 			<ul class="newslist">
 				<li>
-					<p><span class="newslist-date">CLICK TO SEE HEATMAP</span>
-			                   Property ID 1</p>
+					<p><span class="newslist-date" onclick='changePropertyId("1234952674%2F1234952674")'>CLICK TO SEE HEATMAP</span>
+			                   Property ID 1234952674%2F1234952674 FLORIDA</p>
 				</li>
 
 <li>
-					<p><span class="newslist-date">CLICK TO SEE HEATMAP</span>
-			                  Property ID 2 </p>
+					<p><span class="newslist-date" onclick='changePropertyId("1234584931%2F1234584931")'>CLICK TO SEE HEATMAP</span>
+			                  Property ID 1234584931%2F1234584931 ???</p>
  
 				</li>
 			</ul>
@@ -315,7 +430,7 @@ License: Creative Commons Attribution
    		<li>
                     <h4>Listing Min/Max Changer</h4>
                     <ul>
-        				<li><p>change listing price here</p></li>
+        				<li><span id="rent_stuff"></span><img id="trend" src="nothing.png" style="width:60px;height:35px;"></li>
         			</ul>
                 </li>
                 
