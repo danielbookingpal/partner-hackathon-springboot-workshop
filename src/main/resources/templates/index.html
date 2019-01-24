@@ -69,18 +69,21 @@ License: Creative Commons Attribution
       //var bounds = new google.maps.LatLngBounds;
 
       function setDefaultGlobals() {
-        alert("help");
         //insert default globals here
         var competitionParser=[];
         $.get("http://localhost:8080/competitiveSet?propertyId=1234952674%2F1234952674", function(data, status){
           var responseParser = data.competitiveUnits;
+          var count = 0;
           for(var i = 0; i < responseParser.length; i++) {
-            alert(data);
-            //competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
+        	if(count == 25) {
+        		break;
+        	}
+        	console.log(responseParser[i].geocode.latitude + " " + responseParser[i].geocode.longitude);
+            competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
+          	count++;
           }
+          setGlobals({lat: 28.26068250853662, lng: -81.64670320000005},competitionParser);
         });
-
-        setGlobals({lat: 28.26068250853662, lng: -81.64670320000005},competitionParser);
       }
 
       function setGlobals(mainInput,competitionInput) {
@@ -122,8 +125,14 @@ License: Creative Commons Attribution
 
       function callback(results, status) {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
+          var count = 0;
           for (var i = 0; i < results.length; i++) {
+        	if(count == 25) {
+        		break;
+        	}
+        	  
             createMarker(results[i]);
+            count++;
           }
           findDistanceMatrix();
         }
