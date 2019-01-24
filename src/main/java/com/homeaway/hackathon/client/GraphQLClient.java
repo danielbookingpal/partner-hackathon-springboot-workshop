@@ -20,13 +20,12 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.homeaway.hackathon.model.PropertyCompetitiveUnits;
-import org.json.simple.JSONArray;
+import com.homeaway.hackathon.model.LocationRentPotential;
 import org.json.simple.JSONObject;
 import org.springframework.boot.json.JsonSimpleJsonParser;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.homeaway.hackathon.model.Metrics;
 import com.homeaway.hackathon.model.PropertyMetrics;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -40,10 +39,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class GraphQLClient {
 
+    private static final String SYSTEM_ID = "MYBOOKINGPAL";
+    private static final String ADVERTISER_ID = "724471";
     // External System and Supplier ID
-    public static String PREFIX = "MYBOOKINGPAL/724471";
+    public static String PREFIX = SYSTEM_ID + "/" + ADVERTISER_ID;
     private static final String AUTH_TOKEN = "2bb49b51-ff91-4532-ab63-0894fb6ac571";
+    private static final String RENT_POTENTIAL_AUTH_TOKEN = "258c38e7-c0ea-4791-9230-a259c33ed031";
     private static final String ENDPOINT = "https://xapi.homeaway.com/rezfest/graphql";
+    private static final String RENT_POTENTIAL_ENDPOINT = "https://integration.homeaway.com/services/external/rentPotentialPrediction";
 
     private static final OkHttpClient CLIENT = new OkHttpClient();
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -176,5 +179,45 @@ public class GraphQLClient {
                 + "}"
                 + "\"}";
         return String.format(rawQuery, propertyId);
+    }
+
+    public Optional<LocationRentPotential> getRentPotentialPrediction(Double latitude, Double longitude,
+            Float bathroom, Integer bedroom, Integer sleep) {
+        String query = getRentPotentialQuery(latitude, longitude, bathroom, bedroom, sleep);
+        log.info("query {}", query);
+        try {
+            // Do Post
+            String response = doPostRequest(RENT_POTENTIAL_ENDPOINT, query);
+
+            // De-Serialize
+//            Object obj = new JsonSimpleJsonParser().parseMap(response);
+//            JSONObject jo = (JSONObject) obj;
+//            Map data = (Map)jo.get("data");
+//            JSONObject property = (JSONObject)data.get("property");
+//            if (property!=null) {
+                //Return
+                return Optional.ofNullable(MAPPER.readValue(response, LocationRentPotential.class));
+//            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    private String getRentPotentialQuery(Double latitude, Double longitude, Float bathroom, Integer bedroom, Integer sleep) {
+        String rawQuery = "{\n" +
+                "    \"systemId\": \"" + SYSTEM_ID + "\",\n" +
+                "    \"advertiserId\": \"" + ADVERTISER_ID + "\",\n" +
+                "    \"authToken\": \"" + RENT_POTENTIAL_AUTH_TOKEN + "\",\n" +
+                "    \"input\": {\n" +
+                "        \"lat\": %s,\n" +
+                "        \"long\": %s,\n" +
+                "        \"bathroomNum\": %s,\n" +
+                "        \"bedroomNum\": %s,\n" +
+                "        \"sleepNum\": %s,\n" +
+                "        \"num_nn\": %s\n" +
+                "    }\n" +
+                "}";
+        return String.format(rawQuery, latitude, longitude, bathroom, bedroom, sleep, 10);
     }
 }
