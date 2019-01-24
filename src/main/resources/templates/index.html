@@ -86,7 +86,7 @@ License: Creative Commons Attribution
             competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
           	count++;
           }
-          mainProperty = {lat: 28.26068250853662, lng: -81.64670320000005};
+          mainProperty = {lat:data.geocode.latitude, lng:data.geocode.longitude};
           competition = competitionParser;
           getNearbyPlaces();
         });
