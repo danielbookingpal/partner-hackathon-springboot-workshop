@@ -45,7 +45,7 @@ public class GraphQLClient {
     private static final String ADVERTISER_ID = "724471";
     // External System and Supplier ID
     public static String PREFIX = SYSTEM_ID + "/" + ADVERTISER_ID;
-    private static final String AUTH_TOKEN = "2bb49b51-ff91-4532-ab63-0894fb6ac571";
+    private static final String AUTH_TOKEN = "d221a2e5-c82d-452a-ad02-de0cea33d15d";
     private static final String RENT_POTENTIAL_AUTH_TOKEN = "258c38e7-c0ea-4791-9230-a259c33ed031";
     private static final String ENDPOINT = "https://xapi.homeaway.com/rezfest/graphql";
     private static final String RENT_POTENTIAL_ENDPOINT = "https://integration.homeaway.com/services/external/rentPotentialPrediction";
