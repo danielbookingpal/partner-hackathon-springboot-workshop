@@ -119,10 +119,10 @@ License: Creative Commons Attribution
         		break;
         	}
         	console.log(responseParser[i].geocode.latitude + " " + responseParser[i].geocode.longitude);
-            competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
+            competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude, propertyName:responseParser[i].heading});
           	count++;
           }
-          mainProperty = {lat:data.geocode.latitude, lng:data.geocode.longitude};
+          mainProperty = {lat:data.propertyInfo.geocode.latitude, lng:data.propertyInfo.geocode.longitude, propertyName:data.propertyInfo.propertyName};
           competition = competitionParser;
           map = new google.maps.Map(document.getElementById('map'), {
               center: mainProperty,
@@ -317,9 +317,19 @@ License: Creative Commons Attribution
         bounds.extend(marker.getPosition());
 
         google.maps.event.addListener(marker, 'click', function() {
-          infowindow.setContent("Test Property");
+          infowindow.setContent(place.propertyName);
           infowindow.open(map, this);
         });
+
+        // marker.addListener('mouseover', function() {
+        //   infowindow.setContent(place.propertyName);
+        //   infowindow.open(map, this);
+        // });
+
+        // // assuming you also want to hide the infowindow when user mouses-out
+        // marker.addListener('mouseout', function() {
+        //   infowindow.close();
+        // });
       }
 
       function createMarker(place) {

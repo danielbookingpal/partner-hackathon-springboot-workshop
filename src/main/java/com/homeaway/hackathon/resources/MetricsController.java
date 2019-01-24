@@ -39,15 +39,10 @@ public class MetricsController {
     @Autowired
     private GraphQLClient client;
 
-//    @RequestMapping(value = "/", method = RequestMethod.GET)
-//    public String index() {
-//        return "Greetings from Spring Boot!";
-//    }
-
     /**
      * Return PageViews for the given property
-     * @param propertyId
-     * @return
+     * @param propertyId property id
+     * @return property metrics
      */
     @RequestMapping(value = "/metrics", method = RequestMethod.GET)
     public Optional<PropertyMetrics> metrics(@RequestParam(value = "propertyId", defaultValue = "123.456.7890") String propertyId) {
@@ -63,8 +58,7 @@ public class MetricsController {
 
     /**
      * Retrieve metrics for a portfolio of properties in my system
-     * @param propertyId
-     * @return
+     * @return property metric stats
      */
     @RequestMapping(value = "/metricsStats", method = RequestMethod.GET)
     public List<Optional<PropertyMetrics>> metricsStats() {
@@ -72,16 +66,15 @@ public class MetricsController {
         List<String> myProperties = Arrays.asList(
             "EXTID_1/UNITID_1",
             "EXTID_2/UNITID_2");
-        List<Optional<PropertyMetrics>> results = myProperties.stream()
+        return myProperties.stream()
             .map(propertyId -> {
                 try {
                     return metrics(propertyId);
                 } catch (Exception ex) {
                     log.error("Error retrieving metrics for : {}", propertyId, ex);
                 }
-                return null;
+                return Optional.<PropertyMetrics>empty();
             }).collect(Collectors.toList());
-        return results;
     }
 
 }
