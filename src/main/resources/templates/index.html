@@ -232,14 +232,14 @@ License: Creative Commons Attribution
     	  
     	  if(mainAverage < competitionAverage) {
     		  image = "UpArrow.png";
-    		  document.getElementById("trend").src = image;
     	  }
     	  else if(mainAverage > competitionAverage) {
-    		  image = "DownArrow.jpg"
+    		  image = "DownArrow.png"
     	  }
     	  else {
-    		  image = "nothing.jpg";
+    		  image = "nothing.png";
     	  }
+    	  document.getElementById("trend").src = image;
       }
 
       function findDistanceMatrix(porigins, pdestinations) {
@@ -395,7 +395,7 @@ License: Creative Commons Attribution
                <li>
                     <h4>Heat Map Options</h4>
                     <ul class="blocklist">
-                        <li>
+                        <li style="color:white;">
 							  <input type="radio" name="prop_type" value="amusement_park"> Amusement Park<br>
 							  <input type="radio" name="prop_type" value="aquarium"> Aquarium<br>
 							  <input type="radio" name="prop_type" value="art_gallery"> Art Gallery<br>
@@ -430,7 +430,7 @@ License: Creative Commons Attribution
    		<li>
                     <h4>Listing Suggestion</h4>
                     <ul>
-        				<li><span id="rent_stuff" style="color:white;padding-right:100px;"></span><img id="trend" src="nothing.png" style="width:90px;height:50px;"></li>
+        				<li style="color:white;font-size:35px;">$<span id="rent_stuff" style="color:white;padding-right:100px;font-size:20px;padding-left:20px;"></span><img id="trend" src="nothing.png" style="width:90px;height:50px;"></li>
         			</ul>
                 </li>
                 
