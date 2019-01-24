@@ -89,12 +89,10 @@ License: Creative Commons Attribution
     	   if (radios[i].checked)
     	   {
     	    propertyType = radios[i].value;
-    	    alert(propertyType);
     	    break;
     	   }
     	  }
     	  time = parseInt(document.getElementById("time").value);
-    	  alert(time);
     	  initMap();
       }
       
@@ -229,19 +227,13 @@ License: Creative Commons Attribution
     	  mainAverage /= mainTimes.length;
     	  
     	  if(mainAverage < competitionAverage) {
-    		  alert(mainAverage + " " + competitionAverage);
-    		  alert("up");
     		  image = "UpArrow.png";
     		  document.getElementById("trend").src = image;
     	  }
     	  else if(mainAverage > competitionAverage) {
-    		  alert(mainAverage + " " + competitionAverage);
-    		  alert("down");
     		  image = "DownArrow.jpg"
     	  }
     	  else {
-    		  alert(mainAverage + " " + competitionAverage);
-    		  alert("nothing");
     		  image = "nothing.jpg";
     	  }
       }
