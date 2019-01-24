@@ -167,11 +167,14 @@ License: Creative Commons Attribution
           var count = 0;
           createCompetitionMarker(mainProperty,"M");
           for (var i = 0; i < results.length; i++) {
+        	if(createMarker(results[i]) === false) {
+        		continue;
+        	}
+        	
+        	count++;
         	if(count == 10) {
         		break;
         	}
-            createMarker(results[i]);
-            count++;
           }
           findDistanceMatrix(competition, destinations);
         }
@@ -332,7 +335,7 @@ License: Creative Commons Attribution
       function createMarker(place) {
         var rating = place.rating;
         if(rating < 4.0) {
-            return;
+            return false;
         }
 
         var placeLoc = place.geometry.location;
@@ -349,6 +352,7 @@ License: Creative Commons Attribution
           infowindow.setContent(place.name + " " + rating);
           infowindow.open(map, this);
         });
+        return true;
       }
 </script>
 
@@ -425,13 +429,17 @@ License: Creative Commons Attribution
 			<h4>Property IDs</h4>
 			<ul class="newslist">
 				<li>
-					<p><span class="newslist-date" onclick='changePropertyId("1234952674%2F1234952674")'>CLICK TO SEE HEATMAP</span>
+					<p><span class="newslist-date" style="color:white;" onclick='changePropertyId("1234952674%2F1234952674")'>CLICK TO SEE HEATMAP</span>
 			                   Property ID 1234952674%2F1234952674 FLORIDA</p>
 				</li>
 
 <li>
-					<p><span class="newslist-date" onclick='changePropertyId("1234584931%2F1234584931")'>CLICK TO SEE HEATMAP</span>
-			                  Property ID 1234584931%2F1234584931 ORLANDO</p>
+					<p><span class="newslist-date" style="color:white;" onclick='changePropertyId("1234584931%2F1234584931")'>CLICK TO SEE HEATMAP</span>
+			                  Property ID 1234584931%2F1234584931 ORLANDO DOWNTOWN</p>
+ 
+ 					<br>
+ 					<p><span class="newslist-date" style="color:white;" onclick='changePropertyId("1234778666%2F1234778666")'>CLICK TO SEE HEATMAP</span>
+			                  Property ID 1234778666%2F1234778666 EPCOT</p>
  
 				</li>
 			</ul>
