@@ -135,19 +135,18 @@ License: Creative Commons Attribution
         	if(count == 10) {
         		break;
         	}
-        	//console.log(count);
             createMarker(results[i]);
             count++;
           }
-          findDistanceMatrix();
+          findDistanceMatrix(competition, destinations);
         }
       }
 
-      function findDistanceMatrix() {
+      function findDistanceMatrix(porigins, pdestinations) {
         var service = new google.maps.DistanceMatrixService;
         service.getDistanceMatrix({
-          origins: competition,
-          destinations: destinations,
+          origins: porigins,
+          destinations: pdestinations,
           travelMode: 'DRIVING',
           unitSystem: google.maps.UnitSystem.METRIC,
           avoidHighways: false,
