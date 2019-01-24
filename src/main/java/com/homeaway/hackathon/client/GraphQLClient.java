@@ -23,6 +23,7 @@ import java.util.Optional;
 import com.homeaway.hackathon.model.Geocode;
 import com.homeaway.hackathon.model.PropertyCompetitiveUnits;
 import com.homeaway.hackathon.model.LocationRentPotential;
+import com.homeaway.hackathon.model.PropertyInfo;
 import org.json.simple.JSONObject;
 import org.springframework.boot.json.JsonSimpleJsonParser;
 import org.springframework.stereotype.Component;
@@ -54,22 +55,33 @@ public class GraphQLClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    private Map<String, Geocode> propertyGeoCodes = new HashMap<>();
+    private Map<String, PropertyInfo> propertyInfos = new HashMap<>();
 
-    private final Geocode DEFAULT_GEO_CODE = getGeoCode(28.26068250853662, -81.64670320000005);
+    private final PropertyInfo DEFAULT_PROPERTY_INFO = getPropertyInfo(28.26068250853662, -81.64670320000005,
+            "Championsgate Resort - 6BD/5BA Pool Home - Sleeps 12 - Gold - RCG6564");
 
     public GraphQLClient() {
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234952674%2F1234952674", DEFAULT_GEO_CODE);
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234584931%2F1234584931", getGeoCode(28.37791, -81.69009));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234584934%2F1234584934", getGeoCode(28.29384, -81.66179));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234584956%2F1234584956", getGeoCode(28.3276209585605, -81.5877721));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234585093%2F1234585093", getGeoCode(28.321542860255907, -81.59693959999998));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234771580%2F1234771580", getGeoCode(28.3247304, -81.444574));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234778666%2F1234778666", getGeoCode(28.320951, -81.602068));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234811463%2F1234811463", getGeoCode(28.238232908529, -81.60113515));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234893930%2F1234893930", getGeoCode(28.26117640853682, -81.6472372));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234954958%2F1234954958", getGeoCode(28.26105930853674, -81.64328260000002));
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234958810%2F1234958810", getGeoCode(28.23418560852714, -81.6010963));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234952674%2F1234952674", DEFAULT_PROPERTY_INFO);
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234584931%2F1234584931", getPropertyInfo(28.37791, -81.69009,
+                "Greater Groves - Pool Home 4BD/3BA - Sleeps 8 - Gold - RGG408"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234584934%2F1234584934", getPropertyInfo(28.29384, -81.66179,
+                "Hampton Lakes - Pool Home 5BD/3BA - Sleeps 10 - Silver - RHL504"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234584956%2F1234584956", getPropertyInfo(28.3276209585605, -81.5877721,
+                "Oakwater Resort - 2BD/2BA Condo Near Disney - Sleeps 4 - Gold - ROW225"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234585093%2F1234585093", getPropertyInfo(28.321542860255907, -81.59693959999998,
+                "Windsor Hills Condo 3Bedroom/2Bathroom Sleeps 6 Gold - RWH383"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234771580%2F1234771580", getPropertyInfo(28.3247304, -81.444574,
+                "Sonoma - 7BD/9BA Pool Home - Sleeps - RSN7852"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234778666%2F1234778666", getPropertyInfo(28.320951, -81.602068,
+                "Windsor Hills Resort - 5BD/4BA Pool Home - Sleeps 10 - Platinum - RWH575"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234811463%2F1234811463", getPropertyInfo(28.238232908529, -81.60113515,
+                "Solterra Resort Platinum - 032 Pool Home"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234893930%2F1234893930", getPropertyInfo(28.26117640853682, -81.6472372,
+                "Champions Gate Resort - 5BD/5BA Pool Home - Sleeps 10 - Platinum - RCG553"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234954958%2F1234954958", getPropertyInfo(28.26105930853674, -81.64328260000002,
+                "Championsgate - 4BD/3BA Town House - Sleeps 8 - Platinum - RCG4921"));
+        propertyInfos.put("MYBOOKINGPAL%2F724471%2F1234958810%2F1234958810", getPropertyInfo(28.23418560852714, -81.6010963,
+                "Solterra Resort - 7BD/5.5BA Pool Home - Sleeps 14 - RST7565"));
     }
     /**
      * POST query to GraphQL endpoint
@@ -161,8 +173,8 @@ public class GraphQLClient {
                 //Return
                 final PropertyCompetitiveUnits propertyCompetitiveUnits = MAPPER.readValue(property.toString(), PropertyCompetitiveUnits.class);
                 if (propertyCompetitiveUnits != null) {
-                    final Geocode geocode = getGeocode(propertyId);
-                    propertyCompetitiveUnits.setGeocode(geocode);
+                    PropertyInfo propertyInfo = getPropertyInfo(propertyId);
+                    propertyCompetitiveUnits.setPropertyInfo(propertyInfo);
                 }
                 return Optional.ofNullable(propertyCompetitiveUnits);
             }
@@ -172,16 +184,20 @@ public class GraphQLClient {
         return Optional.empty();
     }
 
-    private Geocode getGeocode(String propertyId) {
-        Geocode geocode = propertyGeoCodes.get(propertyId);
-        if (geocode == null) {
-            geocode = DEFAULT_GEO_CODE;
+    private PropertyInfo getPropertyInfo(String propertyId) {
+        PropertyInfo propertyInfo = propertyInfos.get(propertyId);
+        if (propertyInfo == null) {
+            propertyInfo = DEFAULT_PROPERTY_INFO;
         }
-        return geocode;
+        return propertyInfo;
     }
 
     private Geocode getGeoCode(double latitude, double longitude) {
         return Geocode.builder().latitude(latitude).longitude(longitude).build();
+    }
+
+    private PropertyInfo getPropertyInfo(double latitude, double longitude, String propertyName) {
+        return PropertyInfo.builder().geocode(getGeoCode(latitude, longitude)).propertyName(propertyName).build();
     }
 
     /**

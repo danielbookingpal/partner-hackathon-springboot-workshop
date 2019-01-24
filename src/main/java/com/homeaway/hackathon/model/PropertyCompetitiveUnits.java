@@ -30,6 +30,6 @@ public class PropertyCompetitiveUnits {
 
     public List<CompetitiveUnit> competitiveUnits;
 
-    private Geocode geocode;
+    private PropertyInfo propertyInfo;
 
 }
