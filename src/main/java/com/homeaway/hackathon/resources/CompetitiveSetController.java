@@ -44,7 +44,6 @@ public class CompetitiveSetController {
      * @param propertyId
      * @return
      */
-    @CrossOrigin
     @RequestMapping(value = "/competitiveSet", method = RequestMethod.GET)
     public Optional<PropertyCompetitiveUnits> competitiveSet(@RequestParam(value = "propertyId") String propertyId) {
         log.info("GET Metrics for {}", propertyId);

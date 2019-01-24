@@ -1,0 +1,319 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+
+
+<title>deiform - Free CSS Template by ZyPOP</title>
+
+
+<link rel="stylesheet" href="css/reset.css" type="text/css" />
+<link rel="stylesheet" href="css/styles.css" type="text/css" />
+<link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+<style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+
+      #body {
+        height: 100%;
+      }
+
+      .width {
+        width: 100%;
+      }
+
+      #content {
+        height: 1000px;
+        width: 1250px;
+      }
+
+</style>
+
+
+<!--[if lt IE 9]>
+<script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+<![endif]-->
+
+<script type="text/javascript" src="js/jquery.js"></script>
+<script type="text/javascript" src="js/slider.js"></script>
+<script type="text/javascript" src="js/superfish.js"></script>
+
+<script type="text/javascript" src="js/custom.js"></script>
+
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0" />
+
+<!--
+deiform, a free CSS web template by ZyPOP (zypopwebtemplates.com/)
+
+Download: http://zypopwebtemplates.com/
+
+License: Creative Commons Attribution
+//-->
+
+
+<script>
+    // This example requires the Places library. Include the libraries=places
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+
+      var map = null;
+      var infowindow;
+      var mainProperty;
+      var competition;
+      var destinations;
+      var heatLocations;
+      //var bounds = new google.maps.LatLngBounds;
+
+      function setDefaultGlobals() {
+        //insert default globals here
+        var competitionParser=[];
+        $.get("http://localhost:8080/competitiveSet?propertyId=1234952674%2F1234952674", function(data, status){
+          var responseParser = data.competitiveUnits;
+          for(var i = 0; i < responseParser.length; i++) {
+            competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
+          }
+        });
+
+        setGlobals({lat: -33.867, lng: 151.195},competitionParser);
+      }
+
+      function setGlobals(mainInput,competitionInput) {
+        mainProperty = mainInput;
+        competition = competitionInput;
+
+        if(map != null) {
+            infowindow = null;
+            destinations = null;
+            heatLocations = null;
+            initMap();
+        }
+      }
+
+      function initMap() { 
+        if(map == null) {
+            setDefaultGlobals();
+        }
+
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: mainProperty,
+          zoom: 18
+        });
+        infowindow = new google.maps.InfoWindow();
+
+        getNearbyPlaces();
+      }
+
+      function getNearbyPlaces() {
+        heatLocations=[];
+        destinations=[];
+        var service = new google.maps.places.PlacesService(map);
+        service.nearbySearch({
+          location: mainProperty,
+          radius: 500,
+          type: ['store']
+        }, callback);
+      }
+
+      function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]);
+          }
+          findDistanceMatrix();
+        }
+      }
+
+      function findDistanceMatrix() {
+        var service = new google.maps.DistanceMatrixService;
+        service.getDistanceMatrix({
+          origins: competition,
+          destinations: destinations,
+          travelMode: 'DRIVING',
+          unitSystem: google.maps.UnitSystem.METRIC,
+          avoidHighways: false,
+          avoidTolls: false
+        }, function(response, status) {
+          if (status !== 'OK') {
+            alert('Error was: ' + status);
+          } else {
+            var originList = response.originAddresses;
+            var destinationList = response.destinationAddresses;
+
+            var timeGrid = [];
+            for (var i = 0; i < originList.length; i++) {
+              var results = response.rows[i].elements;
+              try {
+                  var competitiveDriveTimes = [];
+                  for (var j = 0; j < results.length; j++) {
+                    competitiveDriveTimes.push(parseInt(results[j].duration.text));
+                  }
+                  timeGrid.push(competitiveDriveTimes);
+                  createCompetitionMarker(competition[i],'G');
+              }
+              catch(err) {
+                createCompetitionMarker(competition[i],'B');
+              }
+            }
+
+            for(var i = 0; i < results.length; i++) {
+                var sum = 0.0;
+                for(var j = 0; j < timeGrid.length; j++) {
+                    sum += timeGrid[j][i];
+                }
+                var average = sum / timeGrid.length;
+                heatLocations[i].weight = (2.5 / average) / 4;
+            }
+          }
+          createHeatMap();
+        });
+      }
+
+      function createHeatMap() {
+        heatmap = new google.maps.visualization.HeatmapLayer({
+            data: heatLocations,
+            map: map
+          });
+        heatmap.set('radius',800);
+      }
+
+      function createCompetitionMarker(place,type) {
+        var originIcon = 'https://chart.googleapis.com/chart?' +
+            'chst=d_map_pin_letter&chld=' + type + '|FFFF00|000000';
+
+        var marker = new google.maps.Marker({
+          map: map,
+          position: new google.maps.LatLng(place.lat,place.lng),
+          icon: originIcon
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.setContent("Test Property");
+          infowindow.open(map, this);
+        });
+      }
+
+      function createMarker(place) {
+        var rating = place.rating;
+        if(rating < 4.0) {
+            return;
+        }
+
+        var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({
+          map: map,
+          position: placeLoc
+        });
+
+        heatLocations.push({location: place.geometry.location, weight: 0.1});
+        destinations.push(new google.maps.LatLng(place.geometry.location.lat(), place.geometry.location.lng()));
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.setContent(place.name + " " + rating);
+          infowindow.open(map, this);
+        });
+      }
+</script>
+
+
+</head>
+<body>
+<div id="container" class="width">
+
+    <header> 
+	<div class="width">
+
+    		<h1><a href="/">COMPETETIVE HEATMAP SUGGESTION TOOL</a></h1>
+
+		<nav>
+	
+    			<ul class="sf-menu dropdown">
+
+			
+        			<li class="selected"><a href="index.html">Home</a></li>
+
+            			<li>
+            
+				<li><a href="#">Contact</a></li>
+       			</ul>
+
+			
+			<div class="clear"></div>
+    		</nav>
+       	</div>
+
+	<div class="clear"></div>
+
+       
+    </header>
+
+    <div id="body" class="width">
+
+
+
+		<section id="content" class="two-column with-right-sidebar">
+
+			<div id="map"></div>
+		
+        </section>
+        
+        <aside class="sidebar big-sidebar right-sidebar">
+	
+	
+            <ul>	
+               <li>
+                    <h4>Heat Map Options</h4>
+                    <ul class="blocklist">
+                        <li>
+                            <p>radio buttons go here</p>
+                            <button onclick="setGlobals({lat: -36.867, lng: 145.185},[{lat: 28.37128, lng: -81.51216},{lat: -33.867, lng: 151.198},{lat: -33.866, lng: 151.195},{lat: -33.869, lng: 151.199}])">press me!</button>
+                        </li>
+                    </ul>
+                </li>
+                
+               
+
+		
+               
+                <li>
+			<h4>Property IDs</h4>
+			<ul class="newslist">
+				<li>
+					<p><span class="newslist-date">CLICK TO SEE HEATMAP</span>
+			                   Property ID 1</p>
+				</li>
+
+<li>
+					<p><span class="newslist-date">CLICK TO SEE HEATMAP</span>
+			                  Property ID 2 </p>
+ 
+				</li>
+			</ul>
+                </li>
+	
+   		<li>
+                    <h4>Listing Min/Max Changer</h4>
+                    <ul>
+        				<li><p>change listing price here</p></li>
+        			</ul>
+                </li>
+                
+            </ul>
+		
+        </aside>
+    	<div class="clear"></div>
+    </div>
+
+
+
+            <div class="clear"></div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; YourSite 2014. <a href="http://zypopwebtemplates.com/">Free CSS Web Templates</a> by ZyPOP</p>
+         </div>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAGtKI6e-3klr-sJzVLikzNs-7f6TpjZ6Q&libraries=places,visualization&callback=initMap" async defer></script>
+</body>
+</html>

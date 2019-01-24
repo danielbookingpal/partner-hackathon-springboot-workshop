@@ -39,10 +39,10 @@ public class MetricsController {
     @Autowired
     private GraphQLClient client;
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String index() {
-        return "Greetings from Spring Boot!";
-    }
+//    @RequestMapping(value = "/", method = RequestMethod.GET)
+//    public String index() {
+//        return "Greetings from Spring Boot!";
+//    }
 
     /**
      * Return PageViews for the given property
