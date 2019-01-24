@@ -69,16 +69,18 @@ License: Creative Commons Attribution
       //var bounds = new google.maps.LatLngBounds;
 
       function setDefaultGlobals() {
+        alert("help");
         //insert default globals here
         var competitionParser=[];
         $.get("http://localhost:8080/competitiveSet?propertyId=1234952674%2F1234952674", function(data, status){
           var responseParser = data.competitiveUnits;
           for(var i = 0; i < responseParser.length; i++) {
-            competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
+            alert(data);
+            //competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
           }
         });
 
-        setGlobals({lat: -33.867, lng: 151.195},competitionParser);
+        setGlobals({lat: 28.26068250853662, lng: -81.64670320000005},competitionParser);
       }
 
       function setGlobals(mainInput,competitionInput) {
