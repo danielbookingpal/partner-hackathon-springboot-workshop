@@ -66,26 +66,33 @@ License: Creative Commons Attribution
       var competition;
       var destinations;
       var heatLocations;
+      var bounds;
+      var defaultProperty = "1234952674%2F1234952674";
+
       //var bounds = new google.maps.LatLngBounds;
 
-      function setDefaultGlobals() {
+      function setCompetitiveUnits(propertyId) {
         //insert default globals here
+        bounds = new google.maps.LatLngBounds();
         var competitionParser=[];
-        $.get("http://localhost:8080/competitiveSet?propertyId=1234952674%2F1234952674", function(data, status){
+        $.get("http://localhost:8080/competitiveSet?propertyId=" +propertyId, function(data, status){
           var responseParser = data.competitiveUnits;
           var count = 0;
           for(var i = 0; i < responseParser.length; i++) {
-        	if(count == 25) {
+        	if(count == 10) {
         		break;
         	}
         	console.log(responseParser[i].geocode.latitude + " " + responseParser[i].geocode.longitude);
             competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
           	count++;
           }
-          setGlobals({lat: 28.26068250853662, lng: -81.64670320000005},competitionParser);
+          mainProperty = {lat: 28.26068250853662, lng: -81.64670320000005};
+          competition = competitionParser;
+          getNearbyPlaces();
         });
       }
 
+      /*
       function setGlobals(mainInput,competitionInput) {
         mainProperty = mainInput;
         competition = competitionInput;
@@ -97,19 +104,16 @@ License: Creative Commons Attribution
             initMap();
         }
       }
+      */
 
       function initMap() { 
-        if(map == null) {
-            setDefaultGlobals();
-        }
-
         map = new google.maps.Map(document.getElementById('map'), {
           center: mainProperty,
           zoom: 18
         });
         infowindow = new google.maps.InfoWindow();
 
-        getNearbyPlaces();
+        setCompetitiveUnits(defaultProperty);
       }
 
       function getNearbyPlaces() {
@@ -118,7 +122,7 @@ License: Creative Commons Attribution
         var service = new google.maps.places.PlacesService(map);
         service.nearbySearch({
           location: mainProperty,
-          radius: 500,
+          radius: 1000,
           type: ['store']
         }, callback);
       }
@@ -126,11 +130,12 @@ License: Creative Commons Attribution
       function callback(results, status) {
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           var count = 0;
+          createCompetitionMarker(mainProperty,"M");
           for (var i = 0; i < results.length; i++) {
-        	if(count == 25) {
+        	if(count == 10) {
         		break;
         	}
-        	  
+        	//console.log(count);
             createMarker(results[i]);
             count++;
           }
@@ -176,10 +181,11 @@ License: Creative Commons Attribution
                     sum += timeGrid[j][i];
                 }
                 var average = sum / timeGrid.length;
-                heatLocations[i].weight = (2.5 / average) / 4;
+                heatLocations[i].weight = average / 4;
             }
           }
           createHeatMap();
+          map.fitBounds(bounds);
         });
       }
 
@@ -200,6 +206,7 @@ License: Creative Commons Attribution
           position: new google.maps.LatLng(place.lat,place.lng),
           icon: originIcon
         });
+        bounds.extend(marker.getPosition());
 
         google.maps.event.addListener(marker, 'click', function() {
           infowindow.setContent("Test Property");
@@ -218,6 +225,7 @@ License: Creative Commons Attribution
           map: map,
           position: placeLoc
         });
+        bounds.extend(marker.getPosition());
 
         heatLocations.push({location: place.geometry.location, weight: 0.1});
         destinations.push(new google.maps.LatLng(place.geometry.location.lat(), place.geometry.location.lng()));
