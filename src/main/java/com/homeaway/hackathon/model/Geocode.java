@@ -7,7 +7,7 @@ import lombok.Data;
 @Builder
 public class Geocode {
 
-	private Double longitude;
-
 	private Double latitude;
+
+	private Double longitude;
 }

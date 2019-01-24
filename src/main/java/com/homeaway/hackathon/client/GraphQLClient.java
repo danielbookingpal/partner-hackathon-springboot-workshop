@@ -56,8 +56,11 @@ public class GraphQLClient {
 
     private Map<String, Geocode> propertyGeoCodes = new HashMap<>();
 
+    private final Geocode DEFAULT_GEO_CODE = getGeoCode(28.26068250853662, -81.64670320000005);
+
     public GraphQLClient() {
-        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234952674%2F1234952674", getGeoCode(28.26068250853662, -81.64670320000005));
+        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234952674%2F1234952674", DEFAULT_GEO_CODE);
+        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234584931%2F1234584931", getGeoCode(28.37791, -81.69009));
     }
     /**
      * POST query to GraphQL endpoint
@@ -145,11 +148,12 @@ public class GraphQLClient {
             JSONObject jo = (JSONObject) obj;
             Map data = (Map)jo.get("data");
             JSONObject property = (JSONObject)data.get("property");
-            if (property!=null) {
+            if (property != null) {
                 //Return
                 final PropertyCompetitiveUnits propertyCompetitiveUnits = MAPPER.readValue(property.toString(), PropertyCompetitiveUnits.class);
                 if (propertyCompetitiveUnits != null) {
-                    propertyCompetitiveUnits.setGeocode(propertyGeoCodes.get(propertyId));
+                    final Geocode geocode = getGeocode(propertyId);
+                    propertyCompetitiveUnits.setGeocode(geocode);
                 }
                 return Optional.ofNullable(propertyCompetitiveUnits);
             }
@@ -157,6 +161,14 @@ public class GraphQLClient {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    private Geocode getGeocode(String propertyId) {
+        Geocode geocode = propertyGeoCodes.get(propertyId);
+        if (geocode == null) {
+            geocode = DEFAULT_GEO_CODE;
+        }
+        return geocode;
     }
 
     private Geocode getGeoCode(double latitude, double longitude) {
