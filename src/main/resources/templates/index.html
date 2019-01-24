@@ -127,22 +127,22 @@ License: Creative Commons Attribution
         if (status === google.maps.places.PlacesServiceStatus.OK) {
           var count = 0;
           for (var i = 0; i < results.length; i++) {
-        	if(count == 25) {
-        		break;
-        	}
+            if(count == 25) {
+              break;
+            }
         	  
             createMarker(results[i]);
             count++;
           }
-          findDistanceMatrix();
+          findDistanceMatrix(competition, destinations);
         }
       }
 
-      function findDistanceMatrix() {
+      function findDistanceMatrix(porigins, pdestinations) {
         var service = new google.maps.DistanceMatrixService;
         service.getDistanceMatrix({
-          origins: competition,
-          destinations: destinations,
+          origins: porigins,
+          destinations: pdestinations,
           travelMode: 'DRIVING',
           unitSystem: google.maps.UnitSystem.METRIC,
           avoidHighways: false,
