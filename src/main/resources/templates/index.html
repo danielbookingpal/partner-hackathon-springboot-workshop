@@ -30,6 +30,10 @@
         height: 700px;
         width: 1250px;
       }
+      
+      #legend {
+      	width : 100%;
+      }
 
 </style>
 
@@ -97,7 +101,7 @@ License: Creative Commons Attribution
       }
       
       function setRentPotential() {
-    	  $.get("http://localhost:8080/rentPotential?latitude=28.26068250853662&longitude=-81.64670320000005&bathroom=5.5&bedroom=6&sleep=12", function(data, status){
+    	  $.get("http://localhost:8080/rentPotential?latitude=" + mainProperty.lat + "&longitude=" + mainProperty.lng +"&bathroom=5.5&bedroom=6&sleep=12", function(data, status){
               rentPotential = data.output.rentpotential_pure_ha.mean;
               document.getElementById("rent_stuff").innerHTML = rentPotential;
           });
@@ -372,7 +376,11 @@ License: Creative Commons Attribution
 
     <div id="body" class="width">
 
-
+		<div class="width">
+		<header style="color:white;"><img src="ven.png" style="width:60px;height:35px;"><span style="padding-right:150px;">Red:Very Well Located... Yellow:Well Located... Green:Not Located too well...</span><img src="UpArrow.png" style="width:60px;height:35px;"><span style="padding-right:150px;">Raise Price Slightly!</span><img src="DownArrow.png" style="width:60px;height:35px;"><span style="padding-right:150px;">Lower Price Slightly!</span>   
+				<img src="nothing.png" style="width:60px;height:35px;">Do Nothing!
+		</header>
+		</div>
 
 		<section id="content" class="two-column with-right-sidebar">
 
@@ -413,16 +421,16 @@ License: Creative Commons Attribution
 
 <li>
 					<p><span class="newslist-date" onclick='changePropertyId("1234584931%2F1234584931")'>CLICK TO SEE HEATMAP</span>
-			                  Property ID 1234584931%2F1234584931 ???</p>
+			                  Property ID 1234584931%2F1234584931 ORLANDO</p>
  
 				</li>
 			</ul>
                 </li>
 	
    		<li>
-                    <h4>Listing Min/Max Changer</h4>
+                    <h4>Listing Suggestion</h4>
                     <ul>
-        				<li><span id="rent_stuff"></span><img id="trend" src="nothing.png" style="width:60px;height:35px;"></li>
+        				<li><span id="rent_stuff" style="color:white;padding-right:100px;"></span><img id="trend" src="nothing.png" style="width:90px;height:50px;"></li>
         			</ul>
                 </li>
                 
