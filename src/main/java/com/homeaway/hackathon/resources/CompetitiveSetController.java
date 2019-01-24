@@ -17,20 +17,15 @@ package com.homeaway.hackathon.resources;
 
 import com.homeaway.hackathon.client.GraphQLClient;
 import com.homeaway.hackathon.model.PropertyCompetitiveUnits;
-import com.homeaway.hackathon.model.PropertyMetrics;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -41,12 +36,12 @@ public class CompetitiveSetController {
 
     /**
      * Return PageViews for the given property
-     * @param propertyId
-     * @return
+     * @param propertyId property id
+     * @return competitive set for property
      */
     @RequestMapping(value = "/competitiveSet", method = RequestMethod.GET)
     public Optional<PropertyCompetitiveUnits> competitiveSet(@RequestParam(value = "propertyId") String propertyId) {
-        log.info("GET Metrics for {}", propertyId);
+        log.info("GET Competitive set for {}", propertyId);
         String externalId = String.format("%s/%s", GraphQLClient.PREFIX, propertyId);
                 try {
                     return client.getCompetitiveSet(URLEncoder.encode(externalId, "UTF-8"));

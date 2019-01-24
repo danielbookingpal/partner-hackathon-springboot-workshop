@@ -53,7 +53,7 @@ public class GraphQLClient {
 
     private static final OkHttpClient CLIENT = new OkHttpClient();
     private static final ObjectMapper MAPPER = new ObjectMapper();
-    public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private Map<String, PropertyInfo> propertyInfos = new HashMap<>();
 
@@ -85,10 +85,10 @@ public class GraphQLClient {
     }
     /**
      * POST query to GraphQL endpoint
-     * @param url
-     * @param json
-     * @return
-     * @throws IOException
+     * @param url url
+     * @param json json
+     * @return response
+     * @throws IOException io exception
      */
     private String doPostRequest(String url, String json) throws IOException {
         RequestBody body = RequestBody.create(JSON, json);
@@ -103,8 +103,8 @@ public class GraphQLClient {
 
     /**
      * Retrieve metrics for a propertyId
-     * @param propertyId
-     * @return
+     * @param propertyId property id
+     * @return property metrics
      */
     public Optional<PropertyMetrics> getMetrics(String propertyId) {
         String query = getMetricsQuery(propertyId);
@@ -130,8 +130,8 @@ public class GraphQLClient {
 
     /**
      * Construct the Query
-     * @param propertyId
-     * @return
+     * @param propertyId property
+     * @return metrics query
      */
     private String getMetricsQuery(String propertyId) {
         String rawQuery = "{"

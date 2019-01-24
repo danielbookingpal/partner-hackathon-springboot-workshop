@@ -19,7 +19,6 @@ import com.homeaway.hackathon.client.GraphQLClient;
 import com.homeaway.hackathon.model.LocationRentPotential;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +35,7 @@ public class RentPotentialController {
 
     /**
      * Return PageViews for the given property
-     * @return
+     * @return rent potential
      */
     @RequestMapping(value = "/rentPotential", method = RequestMethod.GET)
     public Optional<LocationRentPotential> rentPotential(@RequestParam(value = "latitude") Double latitude,
