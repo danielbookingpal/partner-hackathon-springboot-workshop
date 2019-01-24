@@ -82,7 +82,7 @@ License: Creative Commons Attribution
             competitionParser.push({lat:responseParser[i].geocode.latitude, lng:responseParser[i].geocode.longitude});
           	count++;
           }
-          setGlobals({lat: 28.26068250853662, lng: -81.64670320000005},competitionParser);
+          setGlobals({lat:data.geocode.latitude, lng:data.geocode.longitude},competitionParser);
         });
       }
 

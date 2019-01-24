@@ -16,9 +16,11 @@ limitations under the License.
 package com.homeaway.hackathon.client;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.homeaway.hackathon.model.Geocode;
 import com.homeaway.hackathon.model.PropertyCompetitiveUnits;
 import com.homeaway.hackathon.model.LocationRentPotential;
 import org.json.simple.JSONObject;
@@ -52,6 +54,11 @@ public class GraphQLClient {
     private static final ObjectMapper MAPPER = new ObjectMapper();
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
+    private Map<String, Geocode> propertyGeoCodes = new HashMap<>();
+
+    public GraphQLClient() {
+        propertyGeoCodes.put("MYBOOKINGPAL%2F724471%2F1234952674%2F1234952674", getGeoCode(28.26068250853662, -81.64670320000005));
+    }
     /**
      * POST query to GraphQL endpoint
      * @param url
@@ -140,12 +147,20 @@ public class GraphQLClient {
             JSONObject property = (JSONObject)data.get("property");
             if (property!=null) {
                 //Return
-                return Optional.ofNullable(MAPPER.readValue(property.toString(), PropertyCompetitiveUnits.class));
+                final PropertyCompetitiveUnits propertyCompetitiveUnits = MAPPER.readValue(property.toString(), PropertyCompetitiveUnits.class);
+                if (propertyCompetitiveUnits != null) {
+                    propertyCompetitiveUnits.setGeocode(propertyGeoCodes.get(propertyId));
+                }
+                return Optional.ofNullable(propertyCompetitiveUnits);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    private Geocode getGeoCode(double latitude, double longitude) {
+        return Geocode.builder().latitude(latitude).longitude(longitude).build();
     }
 
     /**
